@@ -105,3 +105,57 @@ export const bulkCreateProducts = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+export const updateProduct = async (req: any, res: Response) => {
+  try {
+    const { name, price, category_id } = req.body;
+    const productRepo = AppDataSource.getRepository(Product);
+    const id = Number(req.params.id);
+
+    // Check if product exists
+    const product = await productRepo.findOne({
+      where: { id },
+      relations: ["category"], // if you have category relation
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Update fields
+    product.name = name ?? product.name;
+    product.price = price ?? product.price;
+    if (category_id) product.category = { id: Number(category_id) } as any;
+
+    // If image is uploaded via multer
+    if (req.file) {
+      product.image = req.file.path;
+    }
+
+    await productRepo.save(product);
+
+    res.status(200).json({ message: "Product updated", product });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const productRepo = AppDataSource.getRepository(Product);
+    const id = Number(req.params.id);
+
+    const product = await productRepo.findOneBy({ id });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    await productRepo.remove(product);
+
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
