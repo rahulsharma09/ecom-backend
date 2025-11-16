@@ -13,7 +13,7 @@ const router = Router();
 router.get("/", fetchProducts);
 router.post("/create", uploadCloud.single("image"), createProduct);
 router.post("/bulk", bulkCreateProducts);
-router.put("/update/:id", updateProduct);
+router.put("/update/:id", uploadCloud.single("image"), updateProduct);
 router.delete("/delete/:id", deleteProduct);
 
 export default router;
